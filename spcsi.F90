@@ -393,7 +393,6 @@ DEALLOCATE(ZSPDIVP)
 !*       3.    COMPUTATION OF SI TERM AT t+dt FOR DDH.
 !              ---------------------------------------
 
-PRINT *,"LRSIDDH : ",LRSIDDH !!!!essai 17/2 pour compilation et diagnostics
 IF (LRSIDDH) THEN
   IF (LIMPF) PSPTNDSI_VORG(1:NFLEVG,KSTA:KEND)=&
    & PSPTNDSI_VORG(1:NFLEVG,KSTA:KEND) + PSPVORG(1:NFLEVG,KSTA:KEND)
