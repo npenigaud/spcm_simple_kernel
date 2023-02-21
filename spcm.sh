@@ -5,7 +5,11 @@
 #SBATCH --export="NONE"
 #SBATCH --partition ndl
 
+module load nvhpc/22.11
+
 set -x
+
+
 
 ulimit -s unlimited
 export OMP_STACK_SIZE=4G
@@ -18,10 +22,12 @@ export SLURM_EXPORT_ENV=ALL
 export MPIAUTOCONFIG=mpiauto.PGI.conf
 #export MPIAUTOCONFIG=mpiauto.DDT.conf
 
- /opt/softs/mpiauto/mpiauto --nouse-slurm-mpi --verbose -np 8 --wrap --wrap-stdeo -- ./spcm.x --case t0031l015-008mpi --write-grib-1 --write-grib-2 --stat-gp
+#/opt/softs/mpiauto/mpiauto --nouse-slurm-mpi --verbose -np 8 --wrap --wrap-stdeo -- ./spcm.x --case t0031l015-008mpi --write-grib-1 --write-grib-2 --stat-gp
 #/opt/softs/mpiauto/mpiauto --nouse-slurm-mpi --verbose -np 8 --wrap --wrap-stdeo -- ./spcm.x --case t0107l070-008mpi --stat-gp
-#/opt/softs/mpiauto/mpiauto --nouse-slurm-mpi --verbose -np 1 --wrap --wrap-stdeo -- ./spcm.x --case t0031l015-001mpi --stat-gp
+ /opt/softs/mpiauto/mpiauto --nouse-slurm-mpi --verbose -np 1 --wrap --wrap-stdeo -- ./spcm.x --case t0031l015-001mpi --stat-gp
 
 
 #/opt/softs/mpiauto/mpiauto --nouse-slurm-mpi --verbose -np 8 -openmp 1 --wrap --wrap-stdeo -- ./spcm.x --case t0149l105-008mpi --write-grib-1 --write-grib-2 --stat-gp --stat-sp
 
+
+/opt/softs/bin/ja
