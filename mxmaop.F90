@@ -92,8 +92,12 @@ IF(OML_IN_PARALLEL()) THEN
   ELSE
     CALL SGEMMX(KBC,KAR,KAC,1.0_JPRB,PB,KBD,KB,PA,KAD,KA,0.0_JPRB,PC,KCA,KC)
   ENDIF
+  
+  print *,"dans le if"
 
 ELSE
+
+  print *,"dans le else"
 
   JT=OML_MAX_THREADS()
 
