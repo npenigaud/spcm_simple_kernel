@@ -30,7 +30,7 @@ FIAT=/home/gmap/mrpm/marguina/hub/install
 ETRANS=/home/gmap/mrpm/marguina/hub/install
 ECCODES=/home/gmap/mrpm/marguina/install/PGI2211/eccodes-2.14.0
 
-FFLAGS= -mp -fPIC -Minfo -gopt -Mlarge_arrays -Mlist -traceback -Mnofma -Mbyteswapio -Mbackslash
+FFLAGS= -acc -mp -fPIC -ta=nvidia:volta -Minfo=accel -gopt -Mlarge_arrays -Mlist -traceback -Mnofma -Mbyteswapio -Mbackslash
 
 FC=/home/gmap/mrpm/marguina/install/gmkpack_support/wrapper/PGI2211/mpif90 \
    -I$(FIAT)/include \
