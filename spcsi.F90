@@ -189,7 +189,7 @@ ZBDT2=(ZBDT*RSTRET)**2
 !$acc data copyout(zsdiv,zhelp,zsp,zst)
 
 if (limpf) then 
-!$acc data copy(pspauxg)
+!$acc enter data copyin(pspauxg)
 end if
 
 IF( .NOT.LDONEM ) CALL GSTATS(1655,0) ! Main routines and loops in SIGAM chain are parallel
@@ -405,7 +405,7 @@ ENDDO
 IF( .NOT.LDONEM ) CALL GSTATS(1656,1)
 
 if (limpf) then 
-!$acc end data !!!pspaux
+!$acc exit data copyout(pspauxg)
 end if
 !$acc end data !!!copyout(zsdiv,zhelp,zst,zsp)
 !$acc end data !!!copy(pspdivg,psptg,pspspg)
