@@ -72,6 +72,8 @@ USE YOMLDDH      , ONLY : TLDDH
 USE YOMRIP       , ONLY : TRIP
 USE YOMCST       , ONLY : TCST
 
+use cublas
+
 !     ------------------------------------------------------------------
 
 IMPLICIT NONE
