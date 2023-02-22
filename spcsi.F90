@@ -102,8 +102,8 @@ REAL(KIND=JPRB), ALLOCATABLE :: ZSPDIVP(:,:)
 
 REAL(KIND=JPRB) :: ZSDIV  (YDGEOMETRY%YRDIMV%NFLEVG,KSTA:KEND)
 REAL(KIND=JPRB) :: ZHELP  (YDGEOMETRY%YRDIMV%NFLEVG,KSTA:KEND)
-REAL(KIND=JPRB) :: ZST    (YDGEOMETRY%YRDIMV%NFLEVG,KSTA:KEND)
-REAL(KIND=JPRB) :: ZSP    (       KSTA:KEND)
+REAL(KIND=JPRB) :: ZST    (YDGEOMETRY%YRDIMV%NFLEVG,KSTA:KEND) 
+REAL(KIND=JPRB) :: ZSP    (       KSTA:KEND)                   
 
 REAL(KIND=JPRB) :: ZSDIVPL (YDGEOMETRY%YRDIMV%NFLEVG,KM:YDGEOMETRY%YRDIM%NSMAX,2)
 REAL(KIND=JPRB) :: ZSPDIVPL(YDGEOMETRY%YRDIMV%NFLEVG,KM:YDGEOMETRY%YRDIM%NSMAX,2)
@@ -185,6 +185,13 @@ ZBDT2=(ZBDT*RSTRET)**2
 
 !*        2.3  Computes right-hand side of Helmholtz equation.
 
+!$acc enter data copy(pspdivg,psptg,pspspg)
+!$acc enter data copyout(zsdiv,zhelp,zsp,zst)
+
+if (limpf) then 
+!$acc enter data copy(pspauxg)
+end if
+
 IF( .NOT.LDONEM ) CALL GSTATS(1655,0) ! Main routines and loops in SIGAM chain are parallel
 CALL SIGAM_SP_OPENMP(YDGEOMETRY,YDCST,YDDYN,NFLEVG,ISPCOL,ZSDIV,PSPTG(:,KSTA:KEND),PSPSPG(KSTA:KEND))
 
@@ -194,7 +201,7 @@ IF( .NOT.LDONEM ) CALL GSTATS(1656,0)
 
 IF (LSIDG) THEN
   IF (KM > 0) THEN
-!$acc PARALLEL PRIVATE(JSP,JLEV,IN)
+!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(zsdiv,pspdivg)
   !$acc loop gang
     DO JSP=KSTA,KEND
     !$acc loop vector
@@ -205,7 +212,7 @@ IF (LSIDG) THEN
     ENDDO
 !$acc END PARALLEL 
   ELSE
-!$acc PARALLEL PRIVATE(JSP,JLEV,IN)
+!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(pspdivg,zsdiv)
    !$acc loop gang
     DO JSP=KSTA,KEND
     !$acc loop vector
@@ -219,7 +226,7 @@ IF (LSIDG) THEN
 ELSE
 
   ! Case of No Stretching
-!$acc PARALLEL PRIVATE(JSP,JLEV,IN)
+!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(zsdiv,pspdivg)
 !$acc loop gang
   DO JSP=KSTA,KEND
   !$acc loop vector
@@ -234,7 +241,7 @@ ENDIF
 !        Add [F] * result to rhs of Helmholtz equation
 
 IF (LIMPF) THEN
-!$acc PARALLEL PRIVATE(JSP,JLEV)
+!$acc PARALLEL PRIVATE(JSP,JLEV) present(zsdiv,pspauxg)
 !$acc loop gang
   DO JSP=KSTA,KEND
   !$acc loop vector
@@ -358,7 +365,7 @@ ELSE
   !       ZSPDIV=(DIVprim(t+dt)) --> ZSPDIVG=(GMBAR**2 * DIVprim(t+dt)) .
 
   IF( .NOT.LDONEM ) CALL GSTATS(1656,0)
-!$acc PARALLEL PRIVATE(JSP,JLEV)
+!$acc PARALLEL PRIVATE(JSP,JLEV) present(pspdivg,zhelp)
 !$acc loop gang
   DO JSP=KSTA,KEND
   !$acc loop vector
@@ -385,7 +392,7 @@ IF( .NOT.LDONEM ) CALL GSTATS(1657,1)
 !*       2.5  Increment Temperature and surface pressure
 
 IF( .NOT.LDONEM ) CALL GSTATS(1656,0)
-!$acc PARALLEL PRIVATE(JSP,JLEV)
+!$acc PARALLEL PRIVATE(JSP,JLEV) 
 !$acc loop gang
 DO JSP=KSTA,KEND
 !$acc loop vector
@@ -396,6 +403,13 @@ DO JSP=KSTA,KEND
 ENDDO
 !$acc END PARALLEL
 IF( .NOT.LDONEM ) CALL GSTATS(1656,1)
+
+if (limpf) then 
+!$acc exit data copy(pspauxg)
+end if
+!$acc exit data copyout(zsdiv,zhelp,zst,zsp)
+!$acc exit data copy(pspdivg,psptg,pspspg)
+
 
 DEALLOCATE(ZSDIVP)
 DEALLOCATE(ZSPDIVP)
