@@ -116,6 +116,7 @@ REAL(KIND=JPRB) :: ZBDT, ZBDT2
 REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
 
 type(cublasHandle)::handle
+integer::dim_tabl
 
 !     ------------------------------------------------------------------
 
@@ -264,9 +265,10 @@ IF( .NOT.LDONEM ) CALL GSTATS(1656,1)
 IF( .NOT.LDONEM ) CALL GSTATS(1660,0) ! MXMAOP Call to SGEMMX Parallelised
 !!!!CALL MXMAOP(SIMI,1,NFLEVG,ZSDIV,1,NFLEVG,ZSDIVP(:,KSTA:KEND),1,NFLEVG,&
 !!!! & NFLEVG,NFLEVG,ISPCOL)  
+dim_tabl=int(YDGEOMETRY%YRDIMV%NFLEVG)
 !$acc data copy(ZSDIVP)
 !$acc host_data use_device(YDDYN%SIMI,ZSDIV,ZSDIVP)
-CALL cublasDgemm('N','N',int(YDGEOMETRY%YRDIMV%NFLEVG),int(ISPCOL),int(YDGEOMETRY%YRDIMV%NFLEVG),1.0,YDDYN%SIMI,int(YDGEOMETRY%YRDIMV%NFLEVG),ZSDIV,int(YDGEOMETRY%YRDIMV%NFLEVG),0.0,ZSDIVP(:,KSTA:KEND),int(YDGEOMETRY%YRDIMV%NFLEVG))
+CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0,ZSDIVP(:,KSTA:KEND),dim_tabl)
 !$acc end host_data
 !!!$acc end data
 
