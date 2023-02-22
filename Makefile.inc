@@ -42,5 +42,6 @@ FC=/home/gmap/mrpm/marguina/install/gmkpack_support/wrapper/PGI2211/mpif90 \
    $(FFLAGS)
 
 LIBS=-L$(FIAT)/lib64 -lparkind_dp -lfiat -Wl,-rpath,$(FIAT)/lib64 -L$(ECTRANS)/lib64 -ltrans_dp -Wl,-rpath,$(ECTRANS)/lib64 -L$(ECCODES)/lib -leccodes_f90 -leccodes -Wl,-rpath,$(ECCODES)/lib \
-        -L/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib -lcublas -L/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib -llapack_lp64 -lblas_lp64 -Wl,-rpath,/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib
+        -L/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib -llapack_lp64 -lblas_lp64 -Wl,-rpath,/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib
+        #-L/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib -lcublas -L/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib -llapack_lp64 -lblas_lp64 -Wl,-rpath,/opt/softs/nvidia/hpc_sdk/Linux_x86_64/22.11/compilers/lib
 
