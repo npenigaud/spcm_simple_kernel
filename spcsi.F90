@@ -268,7 +268,7 @@ IF( .NOT.LDONEM ) CALL GSTATS(1660,0) ! MXMAOP Call to SGEMMX Parallelised
 dim_tabl=int(YDGEOMETRY%YRDIMV%NFLEVG)
 !$acc data copy(ZSDIVP)
 !$acc host_data use_device(YDDYN%SIMI,ZSDIV,ZSDIVP)
-CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0,ZSDIVP(:,KSTA:KEND),dim_tabl)
+CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0d,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0d,ZSDIVP(:,KSTA:KEND),dim_tabl)
 !$acc end host_data
 !!!$acc end data
 
