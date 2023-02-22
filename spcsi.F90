@@ -185,11 +185,11 @@ ZBDT2=(ZBDT*RSTRET)**2
 
 !*        2.3  Computes right-hand side of Helmholtz equation.
 
-!$acc enter data copy(pspdivg,psptg,pspspg)
-!$acc enter data copyout(zsdiv,zhelp,zsp,zst)
+!$acc data copy(pspdivg,psptg,pspspg)
+!$acc data copyout(zsdiv,zhelp,zsp,zst)
 
 if (limpf) then 
-!$acc enter data copy(pspauxg)
+!$acc data copy(pspauxg)
 end if
 
 IF( .NOT.LDONEM ) CALL GSTATS(1655,0) ! Main routines and loops in SIGAM chain are parallel
@@ -405,10 +405,10 @@ ENDDO
 IF( .NOT.LDONEM ) CALL GSTATS(1656,1)
 
 if (limpf) then 
-!$acc exit data copy(pspauxg)
+!$acc end data !!!pspaux
 end if
-!$acc exit data copyout(zsdiv,zhelp,zst,zsp)
-!$acc exit data copy(pspdivg,psptg,pspspg)
+!$acc end data !!!copyout(zsdiv,zhelp,zst,zsp)
+!$acc end data !!!copy(pspdivg,psptg,pspspg)
 
 
 DEALLOCATE(ZSDIVP)
