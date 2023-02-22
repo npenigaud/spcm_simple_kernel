@@ -191,7 +191,7 @@ ZBDT2=(ZBDT*RSTRET)**2
 !*        2.3  Computes right-hand side of Helmholtz equation.
 
 !$acc data copy(pspdivg,psptg,pspspg)
-!$acc data copyout(zsdiv,zhelp,zsp,zst)
+!$acc data copyout(zsdiv,zhelp,zsp,zst,zspdivp,zspdivp)
 
 if (limpf) then 
 !$acc enter data copyin(pspauxg)
@@ -206,7 +206,7 @@ IF( .NOT.LDONEM ) CALL GSTATS(1656,0)
 
 IF (LSIDG) THEN
   IF (KM > 0) THEN
-!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(zsdiv,pspdivg)
+!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(zsdiv,pspdivg,YDLAP%NVALUE,YDLAP%RLAPIN)
   !$acc loop gang
     DO JSP=KSTA,KEND
     !$acc loop vector
@@ -217,7 +217,7 @@ IF (LSIDG) THEN
     ENDDO
 !$acc END PARALLEL 
   ELSE
-!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(pspdivg,zsdiv)
+!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(pspdivg,zsdiv,YDLAP%NVALUE,YDLAP%RLAPDI)
    !$acc loop gang
     DO JSP=KSTA,KEND
     !$acc loop vector
@@ -231,7 +231,7 @@ IF (LSIDG) THEN
 ELSE
 
   ! Case of No Stretching
-!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(zsdiv,pspdivg)
+!$acc PARALLEL PRIVATE(JSP,JLEV,IN) present(zsdiv,pspdivg,YDLAP%NVALUE,YDLAP%RLAPDI)
 !$acc loop gang
   DO JSP=KSTA,KEND
   !$acc loop vector
@@ -263,14 +263,16 @@ IF( .NOT.LDONEM ) CALL GSTATS(1656,1)
 !           Current space --> vertical eigenmodes space.
 
 IF( .NOT.LDONEM ) CALL GSTATS(1660,0) ! MXMAOP Call to SGEMMX Parallelised
-!!!!CALL MXMAOP(SIMI,1,NFLEVG,ZSDIV,1,NFLEVG,ZSDIVP(:,KSTA:KEND),1,NFLEVG,&
-!!!! & NFLEVG,NFLEVG,ISPCOL)  
-dim_tabl=int(YDGEOMETRY%YRDIMV%NFLEVG)
-!$acc data copy(ZSDIVP)
-!$acc host_data use_device(YDDYN%SIMI,ZSDIV,ZSDIVP)
-CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0D0,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0D0,ZSDIVP(:,KSTA:KEND),dim_tabl)
-!$acc end host_data
-!!!$acc end data
+!$acc update host(zsdiv,zsdivp)
+CALL MXMAOP(SIMI,1,NFLEVG,ZSDIV,1,NFLEVG,ZSDIVP(:,KSTA:KEND),1,NFLEVG,&
+ & NFLEVG,NFLEVG,ISPCOL) 
+!$acc update device(zsdiv,zsdivp)
+!!!!dim_tabl=int(YDGEOMETRY%YRDIMV%NFLEVG)
+!!!!!$acc data copy(ZSDIVP)
+!!!!!$acc host_data use_device(YDDYN%SIMI,ZSDIV,ZSDIVP)
+!!!!CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0D0,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0D0,ZSDIVP(:,KSTA:KEND),dim_tabl)
+!!!!!$acc end host_data
+!!!!!!!$acc end data
 
 IF( .NOT.LDONEM ) CALL GSTATS(1660,1)
 
@@ -284,13 +286,19 @@ IF (LSIDG) THEN
   IS0=YDLAP%NSE0L(KMLOC)
   IS02=0
   II=MIN(KM,1)+1
+  
+  !!! traite comment ?
   ZSDIVPL(:,:,:)=0.0_JPRB
   ZSPDIVPL(:,:,:)=0.0_JPRB
-
+  
+  !$acc parallel private(JN,ISE) present(zsdivpl,zsdivp)
+  !$acc loop gang
   DO JN=KM,NSMAX
     ISE=KSTA+2*(JN-KM)
     ZSDIVPL(:,JN,1:2)=ZSDIVP(:,ISE:ISE+1)
   ENDDO
+  !$acc end parallel
+  
   IF (KM > 0) THEN
 
     !               Inversion of a symmetric matrix.
@@ -309,15 +317,17 @@ IF (LSIDG) THEN
      & SIHEG(1,IS0+1,1),SIHEG2(1,IS02+1,2),&
      & SIHEG2(1,IS02+1,3),ZSDIVPL,ZSPDIVPL)  
   ENDIF
-
+!$acc parallel private(JN,ISE) present(zsdivpl,zsdivp)
+  !$acc loop gang
   DO JN=KM,NSMAX
     ISE=KSTA+2*(JN-KM)
     ZSPDIVP(:,ISE:ISE+1)=ZSPDIVPL(:,JN,1:2)
   ENDDO
+  !$acc end parallel
 ELSE
 
   !             Case with NO Stretching :
-
+!!!non traite pour le moment, on n'y passe pas
   IF (LIMPF) THEN
 
     !               Solve complex pentadiagonal system
@@ -404,7 +414,7 @@ IF( .NOT.LDONEM ) CALL GSTATS(1657,1)
 !*       2.5  Increment Temperature and surface pressure
 
 IF( .NOT.LDONEM ) CALL GSTATS(1656,0)
-!$acc PARALLEL PRIVATE(JSP,JLEV) 
+!$acc PARALLEL PRIVATE(JSP,JLEV) present(zst,psptg)
 !$acc loop gang
 DO JSP=KSTA,KEND
 !$acc loop vector
@@ -420,7 +430,7 @@ if (limpf) then
 !$acc exit data copyout(pspauxg)
 end if
 !$acc end data !!!copyout(zsdiv,zhelp,zst,zsp)
-!$acc end data !!!copy(pspdivg,psptg,pspspg)
+!$acc end data !!!copy(pspdivg,psptg,pspspg,zspdivp,zspdivp)
 
 
 DEALLOCATE(ZSDIVP)
