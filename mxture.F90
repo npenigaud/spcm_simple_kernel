@@ -142,19 +142,27 @@ IF (KT == 0.OR.KT == -1) IT=-2
 
 IF (IT == -3) THEN
 
+  !$acc parallel private(ji,jv) present(px,py)
+  !$acc loop collapse(2)
   DO JI=1,IIX,2
     DO JV=1,KVX
       PX(JV,1,JI)=PY(JV,1,JI)
       PX(JV,1,JI+1)=PY(JV,1,JI+1)
     ENDDO
   ENDDO
+  !$acc end parallel
+  !$acc parallel private(ji,jv) present(px,py)
+  !$acc loop collapse(2)
   DO JI=IIX+1,KIX
     DO JV=1,KVX
       PX(JV,1,JI)=PY(JV,1,JI)
     ENDDO
   ENDDO
+  !$acc end parallel
 
   IF (KLX >= 2) THEN
+  !$acc parallel private(ji,jv,zbb) present(px,py)
+  !$acc loop collapse(2)
     DO JI=1,IIX,2
       DO JV=1,KVX
         ZBB=PB(JV,1)
@@ -162,16 +170,24 @@ IF (IT == -3) THEN
         PX(JV,2,JI+1)=PY(JV,2,JI+1)-ZBB*PX(JV,1,JI+1)
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+    !$acc parallel private(ji,jv,zbb) present(px,py)
+    !$acc loop collapse(2)
     DO JI=IIX+1,KIX
       DO JV=1,KVX
         ZBB=PB(JV,1)
         PX(JV,2,JI)=PY(JV,2,JI)-ZBB*PX(JV,1,JI)
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
   IF (KLX >= 3) THEN
+    !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+    !$acc loop gang
     DO JI=1,IIX,2
+      !$acc loop vector
       DO JL=3,KLX
         DO JV=1,KVX
           ZBB=PB(JV,JL-1)
@@ -182,7 +198,12 @@ IF (IT == -3) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+    !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+    !$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JL=3,KLX
         DO JV=1,KVX
           ZBB=PB(JV,JL-1)
@@ -191,38 +212,57 @@ IF (IT == -3) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
 ELSEIF (IT == -2) THEN
 
+!$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=1,IIX,2
     DO JV=1,KVX
       PX(JV,1,JI)=PY(JV,1,JI)/PA(JV,1)
       PX(JV,1,JI+1)=PY(JV,1,JI+1)/PA(JV,1)
     ENDDO
   ENDDO
+  !$acc end parallel
+  
+  !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=IIX+1,KIX
     DO JV=1,KVX
       PX(JV,1,JI)=PY(JV,1,JI)/PA(JV,1)
     ENDDO
   ENDDO
+  !$acc end parallel
 
+ 
   IF (KLX >= 2) THEN
+   !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
     DO JI=1,IIX,2
       DO JV=1,KVX
         PX(JV,2,JI)=(PY(JV,2,JI)-PB(JV,1)*PX(JV,1,JI))/PA(JV,2)
         PX(JV,2,JI+1)=(PY(JV,2,JI+1)-PB(JV,1)*PX(JV,1,JI+1))/PA(JV,2)
       ENDDO
     ENDDO
+    !$acc end parallel 
+    
+     !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
     DO JI=IIX+1,KIX
       DO JV=1,KVX
         PX(JV,2,JI)=(PY(JV,2,JI)-PB(JV,1)*PX(JV,1,JI))/PA(JV,2)
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
   IF (KLX >= 3) THEN
+   !$acc parallel private(ji,jl,jv) present(px,py)
+!$acc loop gang
     DO JI=1,IIX,2
+    !$acc loop vector
       DO JL=3,KLX
         DO JV=1,KVX
           PX(JV,JL,JI)=(PY(JV,JL,JI)-PC(JV,JL-2)*PX(JV,JL-2,JI)&
@@ -233,7 +273,12 @@ ELSEIF (IT == -2) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+   !$acc parallel private(ji,jl,jv) present(px,py)
+!$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JL=3,KLX
         DO JV=1,KVX
           PX(JV,JL,JI)=(PY(JV,JL,JI)-PC(JV,JL-2)*PX(JV,JL-2,JI)&
@@ -241,23 +286,32 @@ ELSEIF (IT == -2) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
 ELSEIF (IT == 1) THEN
-
+     !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=1,IIX,2
     DO JV=1,KVX
       PX(JV,KLX,JI)=PY(JV,KLX,JI)
       PX(JV,KLX,JI+1)=PY(JV,KLX,JI+1)
     ENDDO
   ENDDO
+  !$acc end parallel
+  
+       !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=IIX+1,KIX
     DO JV=1,KVX
       PX(JV,KLX,JI)=PY(JV,KLX,JI)
     ENDDO
   ENDDO
+  !$acc end parallel 
 
   IF (KLX >= 2) THEN
+         !$acc parallel private(ji,jv,zbb) present(px,py)
+!$acc loop collapse(2)
     DO JI=1,IIX,2
       DO JV=1,KVX
         ZBB=PB(JV,KLX-1)/PA(JV,KLX-1)
@@ -265,16 +319,24 @@ ELSEIF (IT == 1) THEN
         PX(JV,KLX-1,JI+1)=PY(JV,KLX-1,JI+1)-ZBB*PX(JV,KLX,JI+1)
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+           !$acc parallel private(ji,jv,zbb) present(px,py)
+!$acc loop collapse(2)
     DO JI=IIX+1,KIX
       DO JV=1,KVX
         ZBB=PB(JV,KLX-1)/PA(JV,KLX-1)
         PX(JV,KLX-1,JI)=PY(JV,KLX-1,JI)-ZBB*PX(JV,KLX,JI)
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
   IF (KLX >= 3) THEN
+  !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+  !$acc loop gang
     DO JI=1,IIX,2
+    !$acc loop vector
       DO JL=KLX-2,1,-1
         DO JV=1,KVX
           ZBB=PB(JV,JL)/PA(JV,JL)
@@ -285,7 +347,12 @@ ELSEIF (IT == 1) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+      !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+  !$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JL=KLX-2,1,-1
         DO JV=1,KVX
           ZBB=PB(JV,JL)/PA(JV,JL)
@@ -294,23 +361,32 @@ ELSEIF (IT == 1) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
 ELSEIF (IT == 2) THEN
-
+         !$acc parallel private(ji,jv,zbb) present(px,py)
+!$acc loop collapse(2)
   DO JI=1,IIX,2
     DO JV=1,KVX
       PX(JV,KLX,JI)=PY(JV,KLX,JI)/PA(JV,KLX)
       PX(JV,KLX,JI+1)=PY(JV,KLX,JI+1)/PA(JV,KLX)
     ENDDO
   ENDDO
+  !$acc end parallel
+  
+           !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=IIX+1,KIX
     DO JV=1,KVX
       PX(JV,KLX,JI)=PY(JV,KLX,JI)/PA(JV,KLX)
     ENDDO
   ENDDO
+  !$acc end parallel
 
   IF (KLX >= 2) THEN
+        !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+  !$acc loop gang
     DO JI=1,IIX,2
       DO JV=1,KVX
         PX(JV,KLX-1,JI)=&
@@ -320,16 +396,25 @@ ELSEIF (IT == 2) THEN
          & KLX-1)  
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+    !$acc parallel private(ji,jv) present(px,py)
+    !$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JV=1,KVX
         PX(JV,KLX-1,JI)=&
          & (PY(JV,KLX-1,JI)-PB(JV,KLX-1)*PX(JV,KLX,JI))/PA(JV,KLX-1)  
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
   IF (KLX >= 3) THEN
+          !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+  !$acc loop gang
     DO JI=1,IIX,2
+    !$acc loop vector
       DO JL=KLX-2,1,-1
         DO JV=1,KVX
           PX(JV,JL,JI)=(PY(JV,JL,JI)-PB(JV,JL)*PX(JV,JL+1,JI)&
@@ -340,7 +425,12 @@ ELSEIF (IT == 2) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+     !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+  !$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JL=KLX-2,1,-1
         DO JV=1,KVX
           PX(JV,JL,JI)=(PY(JV,JL,JI)-PB(JV,JL)*PX(JV,JL+1,JI)&
@@ -348,40 +438,64 @@ ELSEIF (IT == 2) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
 ELSEIF (IT == 3) THEN
 
+           !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=1,IIX,2
     DO JV=1,KVX
       PX(JV,KLX,JI)=PY(JV,KLX,JI)
       PX(JV,KLX,JI+1)=PY(JV,KLX,JI+1)
     ENDDO
   ENDDO
+  !$acc end parallel
+  
+  
+           !$acc parallel private(ji,jv) present(px,py)
+!$acc loop collapse(2)
   DO JI=IIX+1,KIX
     DO JV=1,KVX
       PX(JV,KLX,JI)=PY(JV,KLX,JI)
     ENDDO
   ENDDO
+  !$acc end parallel
 
   IF (KLX >= 2) THEN
+  
+  
+           !$acc parallel private(ji,jv,zbb) present(px,py)
+!$acc loop gang
     DO JI=1,IIX,2
+    !$acc loop vector
       DO JV=1,KVX
         ZBB=PB(JV,KLX-1)
         PX(JV,KLX-1,JI)=PY(JV,KLX-1,JI)-ZBB*PX(JV,KLX,JI)
         PX(JV,KLX-1,JI+1)=PY(JV,KLX-1,JI+1)-ZBB*PX(JV,KLX,JI+1)
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+    
+           !$acc parallel private(ji,jv,zbb) present(px,py)
+!$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JV=1,KVX
         ZBB=PB(JV,KLX-1)
         PX(JV,KLX-1,JI)=PY(JV,KLX-1,JI)-ZBB*PX(JV,KLX,JI)
       ENDDO
     ENDDO
   ENDIF
+  !$acc end parallel
 
   IF (KLX >= 3) THEN
+             !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+!$acc loop gang
     DO JI=1,IIX,2
+    !$acc loop vector
       DO JL=KLX-2,1,-1
         DO JV=1,KVX
           ZBB=PB(JV,JL)
@@ -392,7 +506,12 @@ ELSEIF (IT == 3) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
+    
+               !$acc parallel private(ji,jl,jv,zbb,zcc) present(px,py)
+!$acc loop gang
     DO JI=IIX+1,KIX
+    !$acc loop vector
       DO JL=KLX-2,1,-1
         DO JV=1,KVX
           ZBB=PB(JV,JL)
@@ -401,6 +520,7 @@ ELSEIF (IT == 3) THEN
         ENDDO
       ENDDO
     ENDDO
+    !$acc end parallel
   ENDIF
 
 ENDIF
@@ -410,6 +530,8 @@ ENDIF
 !              ----------------------
 
 IF (LDMT) THEN
+!$acc parallel private(ji,jl,jv) present(py,px)
+!$acc loop collapse(3)
   DO JI=1,KIX
     DO JL=1,KLX
       DO JV=1,KVX
@@ -417,6 +539,7 @@ IF (LDMT) THEN
       ENDDO
     ENDDO
   ENDDO
+  !$acc end parallel
 ENDIF
 
 !     ------------------------------------------------------------------
