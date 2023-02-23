@@ -267,12 +267,12 @@ IF( .NOT.LDONEM ) CALL GSTATS(1660,0) ! MXMAOP Call to SGEMMX Parallelised
 CALL MXMAOP(SIMI,1,NFLEVG,ZSDIV,1,NFLEVG,ZSDIVP(:,KSTA:KEND),1,NFLEVG,&
  & NFLEVG,NFLEVG,ISPCOL) 
 !$acc update device(zsdiv,zsdivp)
-!!!!dim_tabl=int(YDGEOMETRY%YRDIMV%NFLEVG)
-!!!!!$acc data copy(ZSDIVP)
-!!!!!$acc host_data use_device(YDDYN%SIMI,ZSDIV,ZSDIVP)
-!!!!CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0D0,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0D0,ZSDIVP(:,KSTA:KEND),dim_tabl)
-!!!!!$acc end host_data
-!!!!!!!$acc end data
+dim_tabl=int(YDGEOMETRY%YRDIMV%NFLEVG)
+!!$acc data copy(ZSDIVP)
+!$acc host_data use_device(YDDYN%SIMI,ZSDIV,ZSDIVP)
+CALL cublasDgemm('N','N',dim_tabl,int(ISPCOL),dim_tabl,1.0D0,YDDYN%SIMI,dim_tabl,ZSDIV,dim_tabl,0.0D0,ZSDIVP(:,KSTA:KEND),dim_tabl)
+!!$acc end host_data
+!$acc end data
 
 IF( .NOT.LDONEM ) CALL GSTATS(1660,1)
 
